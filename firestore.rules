@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function owns(itemId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/items/$(itemId))
+        && get(/databases/$(database)/documents/items/$(itemId)).data.ownerUid == request.auth.uid;
+    }
+    match /items/{itemId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['ownerUid','type','title','cat','place','date','desc','q','name','created','img'])
+        && request.resource.data.keys().hasAll(['ownerUid','type','title','cat','place','date','name','created'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.type in ['lost','found']
+        && request.resource.data.title is string && request.resource.data.title.size() > 0 && request.resource.data.title.size() <= 50
+        && request.resource.data.cat is string && request.resource.data.cat.size() <= 50
+        && request.resource.data.place is string && request.resource.data.place.size() > 0 && request.resource.data.place.size() <= 50
+        && request.resource.data.date is string && request.resource.data.date.size() == 10
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 40
+        && request.resource.data.created is int
+        && (!('desc' in request.resource.data) || (request.resource.data.desc is string && request.resource.data.desc.size() <= 160))
+        && (!('q' in request.resource.data) || (request.resource.data.q is string && request.resource.data.q.size() <= 90))
+        && (!('img' in request.resource.data) || (request.resource.data.img is string && request.resource.data.img.size() <= 300000));
+      allow update: if signedIn() && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.type in ['lost','found','returned']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['type']);
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid;
+    }
+    match /itemContacts/{itemId} {
+      allow read: if owns(itemId);
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['ownerUid','email','pin'])
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.email is string && request.resource.data.email.size() >= 5 && request.resource.data.email.size() <= 80
+        && request.resource.data.pin is string && request.resource.data.pin.matches('^[0-9]{4}$')
+        && getAfter(/databases/$(database)/documents/items/$(itemId)).data.ownerUid == request.auth.uid;
+      allow update, delete: if owns(itemId);
+    }
+    match /claims/{claimId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['itemId','ownerUid','claimantUid','name','email','message','answer','created','status'])
+        && request.resource.data.claimantUid == request.auth.uid
+        && request.resource.data.ownerUid is string && request.resource.data.ownerUid != request.auth.uid
+        && request.resource.data.itemId is string
+        && exists(/databases/$(database)/documents/items/$(request.resource.data.itemId))
+        && get(/databases/$(database)/documents/items/$(request.resource.data.itemId)).data.ownerUid == request.resource.data.ownerUid
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 40
+        && request.resource.data.email is string && request.resource.data.email.size() >= 5 && request.resource.data.email.size() <= 120
+        && request.resource.data.message is string && request.resource.data.message.size() >= 3 && request.resource.data.message.size() <= 500
+        && request.resource.data.answer is string && request.resource.data.answer.size() <= 120
+        && request.resource.data.created is int && request.resource.data.status == 'pending';
+      allow read: if signedIn() && (resource.data.claimantUid == request.auth.uid || resource.data.ownerUid == request.auth.uid);
+      allow delete: if signedIn() && resource.data.ownerUid == request.auth.uid && owns(resource.data.itemId);
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}
+
+

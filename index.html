@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIT Lost and Found</title>
+<meta name="description" content="Report a lost item or find one on campus, without messy group chats.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%232B59FF'/%3E%3Ccircle cx='46' cy='44' r='20' fill='none' stroke='white' stroke-width='9'/%3E%3Cpath d='M61 59l18 18' stroke='white' stroke-width='9' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--hero:#0E1736;--ink:#0E1736;--paper:#F4F6FB;--card:#fff;--muted:#5A6482;--line:#DDE2EF;--blue:#2B59FF;--lost:#E8890C;--lost-bg:#FFF1DB;--found:#0E9F77;--found-bg:#DDF6EC;--shadow:0 1px 2px rgba(14,23,54,.06),0 8px 24px rgba(14,23,54,.07)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ink:#EEF1FA;--paper:#0B1124;--card:#141C38;--muted:#9AA4C4;--line:#263055;--blue:#7C98FF;--lost:#F5A63A;--lost-bg:#3A2A0D;--found:#2FD3A0;--found-bg:#0C3228;--shadow:none}}
+:root[data-theme="dark"]{--ink:#EEF1FA;--paper:#0B1124;--card:#141C38;--muted:#9AA4C4;--line:#263055;--blue:#7C98FF;--lost:#F5A63A;--lost-bg:#3A2A0D;--found:#2FD3A0;--found-bg:#0C3228;--shadow:none}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--paper);color:var(--ink);font:500 16px/1.55 "Figtree",system-ui,sans-serif;overflow-x:hidden}
+h1,h2,h3{font-family:"Bricolage Grotesque","Figtree",sans-serif;font-weight:800;letter-spacing:-.025em;line-height:1.05;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+a{color:inherit}
+.wrap{max-width:1160px;margin:0 auto;padding:0 22px}
+/* header */
+header.top{position:fixed;inset:0 0 auto 0;z-index:30;transition:background .25s,box-shadow .25s}
+header.top.solid{background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(12px);box-shadow:0 1px 0 var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:68px;gap:14px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:1.15rem;color:#fff}
+header.top.solid .brand{color:var(--ink)}
+.brand-logo-wrap{width:116px;height:58px;padding:3px 6px;display:flex;align-items:center;justify-content:center;background:#fff;border-radius:7px;flex:none}
+.brand-logo{display:block;width:100%;height:100%;object-fit:contain}
+.brand-name{white-space:nowrap}
+.mark{width:34px;height:34px;border-radius:10px;background:var(--blue);display:grid;place-items:center}
+.top nav{display:flex;align-items:center;gap:4px}
+.top nav a{text-decoration:none;padding:8px 12px;border-radius:8px;font-weight:600;color:#fff;opacity:.85}
+header.top.solid nav a{color:var(--ink)}
+.top nav a:hover{opacity:1;background:rgba(127,140,180,.18)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:10px;padding:11px 18px;background:var(--blue);color:#fff;font-weight:700;cursor:pointer;text-decoration:none;transition:filter .15s,transform .15s}
+.btn:hover{filter:brightness(1.1)}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:inherit;border:1.5px solid currentColor}
+.btn.sm{padding:8px 14px;font-size:.92rem}
+.pbar{position:absolute;left:0;bottom:0;height:3px;width:0;background:var(--blue)}
+@media (max-width:700px){.top nav a.hide-s{display:none}.top .wrap{gap:6px}.brand{gap:5px;font-size:.7rem}.brand-logo-wrap{width:48px;height:34px;padding:2px 3px}.top nav{gap:0}.top nav a{padding:6px 7px;font-size:.78rem}.top nav .btn.sm{padding:7px 8px;font-size:.78rem}}
+/* hero */
+.hero{background:var(--hero);color:#fff;position:relative;overflow:hidden;padding:150px 0 110px}
+.hero::before{content:"";position:absolute;width:640px;height:640px;right:-160px;top:-180px;background:radial-gradient(circle,rgba(43,89,255,.55),transparent 65%);pointer-events:none}
+.hero::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.07) 1px,transparent 1px);background-size:26px 26px;pointer-events:none}
+.hero .wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;position:relative;z-index:1}
+.hero h1{font-size:clamp(2.5rem,6vw,4.6rem)}
+.hero p.sub{font-size:1.2rem;max-width:44ch;color:#C9D1EC;margin:20px 0 28px}
+.cta{display:flex;flex-wrap:wrap;gap:12px}
+.hero .btn.ghost{color:#fff}
+.stats{display:flex;gap:34px;margin-top:44px;flex-wrap:wrap}
+.stat b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:2.2rem;font-weight:800;line-height:1}
+.stat span{color:#9FABD3;font-size:.92rem}
+.stack{position:relative;height:380px}
+.fcard{position:absolute;width:min(300px,78%);background:#fff;color:#0E1736;border-radius:16px;padding:14px;box-shadow:0 24px 50px rgba(0,0,0,.35);will-change:transform}
+.fcard .t{display:grid;place-items:center;height:96px;border-radius:10px;font-size:2.6rem;margin-bottom:10px}
+.fcard b{display:block}
+.fcard small{color:#5A6482}
+.fcard:nth-child(1){left:0;top:10px}.fcard:nth-child(2){right:0;top:120px}.fcard:nth-child(3){left:40px;top:250px}
+@media (max-width:860px){.hero .wrap{grid-template-columns:1fr}.stack{display:block;width:min(100%,460px);height:340px;margin:26px auto 0}.fcard{width:min(270px,76%);padding:12px}.fcard .t{height:78px}.fcard:nth-child(1){left:0;top:4px}.fcard:nth-child(2){right:0;top:92px}.fcard:nth-child(3){left:8%;top:190px}.hero{padding:120px 0 64px}}
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;padding:4px 10px;border-radius:99px}
+.badge::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.badge.lost{background:var(--lost-bg);color:var(--lost)}
+.badge.found{background:var(--found-bg);color:var(--found)}
+/* sections */
+section{padding:90px 0}
+.sh{max-width:640px;margin-bottom:34px}
+.sh h2{font-size:clamp(2rem,4.5vw,3rem);margin-bottom:10px}
+.sh p{color:var(--muted);margin:0;font-size:1.1rem}
+/* steps */
+.how{background:var(--card);border-block:1px solid var(--line)}
+.how .grid2{display:grid;grid-template-columns:.8fr 1.2fr;gap:50px}
+.how .stick{position:sticky;top:110px;align-self:start}
+.how .stick h2{font-size:clamp(2rem,4.5vw,3rem);margin-bottom:12px}
+.how .stick p{color:var(--muted);font-size:1.1rem}
+.rail{position:relative;padding-left:46px}
+.rail::before{content:"";position:absolute;left:15px;top:8px;bottom:8px;width:3px;background:var(--line);border-radius:3px}
+.rail i{position:absolute;left:15px;top:8px;width:3px;height:calc(var(--p,0)*(100% - 16px));background:var(--blue);border-radius:3px}
+.st{min-height:210px;position:relative;opacity:.4;transition:opacity .3s}
+.st.on{opacity:1}
+.st::before{content:attr(data-n);position:absolute;left:-46px;top:0;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--card);border:2px solid var(--line);font-weight:800;font-size:.9rem;transition:.3s}
+.st.on::before{background:var(--blue);border-color:var(--blue);color:#fff}
+.st h3{font-size:1.5rem;margin-bottom:6px}
+.st p{margin:0;color:var(--muted);max-width:46ch}
+@media (max-width:860px){.how .grid2{grid-template-columns:1fr}.how .stick{position:static}}
+/* browse */
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:26px}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px}
+.seg button{border:0;background:transparent;padding:8px 16px;border-radius:9px;font-weight:700;cursor:pointer;color:var(--muted)}
+.seg button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+.field{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 14px}
+.search{flex:1 1 240px;min-width:0}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.it{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;cursor:pointer;transition:transform .2s,border-color .2s;text-align:left;padding:0;width:100%}
+.it:hover{transform:translateY(-3px);border-color:var(--blue)}
+.ph{height:160px;display:grid;place-items:center;font-size:3.4rem;position:relative;background:var(--line)}
+.ph.lost{background:var(--lost-bg)}.ph.found{background:var(--found-bg)}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#eef1f8}
+.ph .badge{position:absolute;left:12px;top:12px;background:var(--card)}
+.it .bd{padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px}
+.it h3{font-size:1.2rem}
+.mt{color:var(--muted);font-size:.92rem;display:flex;gap:6px;align-items:center}
+.empty{grid-column:1/-1;padding:44px 20px;text-align:center;border:1.5px dashed var(--line);border-radius:16px;color:var(--muted)}
+/* form */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.fgrid .full{grid-column:1/-1}
+label{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:.92rem}
+label small{font-weight:500;color:var(--muted)}
+.fgrid input,.fgrid select,.fgrid textarea,dialog input,dialog textarea{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:11px 13px;width:100%}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:var(--shadow)}
+.tog{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tog label{flex-direction:row;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;font-weight:700}
+.tog input{width:auto;accent-color:var(--blue)}
+.tog label:has(input:checked){border-color:var(--blue);background:color-mix(in srgb,var(--blue) 10%,transparent)}
+.err{color:#D93A3A;font-weight:600;min-height:1.2em;font-size:.9rem}
+@media (max-width:640px){.fgrid{grid-template-columns:1fr}.panel{padding:20px}}
+/* dialog */
+dialog{border:0;border-radius:20px;padding:0;width:min(560px,94vw);max-height:92vh;background:var(--card);color:var(--ink);box-shadow:0 30px 80px rgba(0,0,0,.4)}
+dialog::backdrop{background:rgba(8,12,30,.6);backdrop-filter:blur(3px)}
+.dh{height:200px;display:grid;place-items:center;font-size:5rem;position:relative}
+.dh img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#eef1f8}
+.x{position:absolute;right:12px;top:12px;z-index:2;width:36px;height:36px;border-radius:50%;border:0;background:var(--card);cursor:pointer;font-size:1.1rem}
+.db{padding:22px 24px 26px;display:grid;gap:14px}
+.db h3{font-size:1.7rem}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:.95rem}
+.kv dt{color:var(--muted)}.kv dd{margin:0;font-weight:600}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:10px}
+.box h4{margin:0;font-size:1rem}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0;font-weight:600}
+footer{background:var(--hero);color:#9FABD3;padding:34px 0;font-size:.95rem}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,160%);background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:12px;font-weight:700;z-index:60;transition:transform .3s;max-width:92vw}
+.toast.show{transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header class="top" id="top">
+  <div class="wrap">
+    <a class="brand" href="#home" aria-label="SIT Lost and Found home"><span class="brand-logo-wrap"><img class="brand-logo" src="sit-logo.png" alt="Sinhgad Technical Education Society, Pune"></span><span class="brand-name">SIT Lost &amp; Found</span></a>
+    <nav aria-label="Main">
+      <a class="hide-s" href="#how">How it works</a>
+      <a href="#browse">Browse</a>
+      <a class="btn sm" href="#report" style="color:#fff;opacity:1">Report item</a>
+    </nav>
+  </div>
+  <div class="pbar" id="pbar"></div>
+</header>
+
+<main id="home">
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <h1>Lost it on campus? Let’s get it back to you.</h1>
+      <p class="sub">Report a lost item or find one, without messy group chats. Every post has a photo, a place and a date.</p>
+      <div class="cta"><a class="btn" href="#browse">Browse items</a><a class="btn ghost" href="#report">Report an item</a></div>
+      <div class="stats">
+        <div class="stat"><b id="s-lost">0</b><span>Items lost</span></div>
+        <div class="stat"><b id="s-found">0</b><span>Items found</span></div>
+        <div class="stat"><b id="s-ret">0</b><span>Returned</span></div>
+      </div>
+    </div>
+    <div class="stack" aria-hidden="true">
+      <div class="fcard" data-s=".05"><div class="t" style="background:#FFF1DB">🎧</div><b>White earbuds</b><small>Lecture hall 4 · Lost</small></div>
+      <div class="fcard" data-s="-.04"><div class="t" style="background:#DDF6EC">💳</div><b>Student ID card</b><small>Main gate · Found</small></div>
+      <div class="fcard" data-s=".08"><div class="t" style="background:#FFF1DB">🔑</div><b>Room keys</b><small>Canteen · Lost</small></div>
+    </div>
+  </div>
+</div>
+
+<section class="how" id="how">
+  <div class="wrap grid2">
+    <div class="stick">
+      <h2>From lost to returned in three steps</h2>
+      <p>No group chats to scroll. Everything about an item lives on one card.</p>
+    </div>
+    <div class="rail" id="rail"><i></i>
+      <div class="st on" data-n="1"><h3>Post the item</h3><p>Choose Lost or Found, add a photo, the place and the date. Set a 4-digit PIN so only you can close the post later.</p></div>
+      <div class="st" data-n="2"><h3>Search and match</h3><p>Use the Lost and Found tabs, search by name or place, and filter by category until you spot yours.</p></div>
+      <div class="st" data-n="3"><h3>Contact and hand over</h3><p>Send a private claim and answer the check question. The poster reviews claims on their report and marks it returned with their PIN.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="browse">
+  <div class="wrap">
+    <div class="sh"><h2>Browse items</h2><p>Open any card to see full details and contact the person who posted it.</p></div>
+    <div class="bar">
+      <div class="seg" role="tablist" aria-label="Item type">
+        <button role="tab" data-t="all" aria-selected="true">All <span id="n-all"></span></button>
+        <button role="tab" data-t="lost" aria-selected="false">Lost <span id="n-lost"></span></button>
+        <button role="tab" data-t="found" aria-selected="false">Found <span id="n-found"></span></button>
+      </div>
+      <input class="field search" id="q" type="search" placeholder="Search by item, place or detail" aria-label="Search items">
+      <select class="field" id="fc" aria-label="Category"><option value="">All categories</option></select>
+      <select class="field" id="fs" aria-label="Sort"><option value="new">Newest first</option><option value="old">Oldest first</option></select>
+    </div>
+    <div class="cards" id="cards"></div>
+  </div>
+</section>
+
+<section id="report" style="padding-top:0">
+  <div class="wrap">
+    <div class="sh"><h2>Report an item</h2><p>It takes about a minute. Your email is stored privately for claim follow-up. No email is sent automatically.</p></div>
+    <form class="panel fgrid" id="form" novalidate>
+      <div class="full tog" role="radiogroup" aria-label="Report type">
+        <label><input type="radio" name="type" value="lost" checked> I lost something</label>
+        <label><input type="radio" name="type" value="found"> I found something</label>
+      </div>
+      <label>Item name<input id="f-title" maxlength="50" placeholder="Black water bottle" required></label>
+      <label>Category<select id="f-cat"></select></label>
+      <label>Place<input id="f-place" maxlength="50" placeholder="Library, 2nd floor" required></label>
+      <label>Date<input id="f-date" type="date" required></label>
+      <label class="full">Photo <small>Optional, but cards with photos get matched faster</small><input id="f-photo" type="file" accept="image/*"></label>
+      <label class="full">Details<textarea id="f-desc" rows="3" maxlength="160" placeholder="Colour, brand, scratches, stickers"></textarea></label>
+      <label class="full">Check question <small>Only the real owner should know the answer, for example “What sticker is on the back?”</small><input id="f-q" maxlength="90"></label>
+      <label>Your name<input id="f-name" maxlength="40" required></label>
+      <label>Your email<input id="f-email" type="email" maxlength="80" required></label>
+      <label>4-digit PIN <small>Needed to mark the item as returned</small><input id="f-pin" inputmode="numeric" pattern="\d{4}" maxlength="4" required></label>
+      <div class="full err" id="f-err" role="alert"></div>
+      <div class="full"><button class="btn" type="submit">Post item</button></div>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer><div class="wrap"><span>SIT Lost &amp; Found</span><span>Be kind. Return what you find.</span></div></footer>
+
+<dialog id="dlg" aria-labelledby="d-t"></dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script><script src="firebase-config.js"></script><script src="app.js"></script>
+</body>
+</html>
+
+
+
